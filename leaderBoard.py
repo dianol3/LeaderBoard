@@ -141,7 +141,8 @@ with col3:
                                key=f"gk_select_{st.session_state.penalties_taken}")
     
     st.write("### Apitos")
-    audio_path = r"C:\Users\Diana\Desktop\LeaderBoard/whistle.mp3.mp3"  # Caminho atualizado
+    audio_path = "https://raw.githubusercontent.com/dianol3/LeaderBoard/main/whistle.mp3.mp3"
+
 
     if 'time_for_second_whistle' not in st.session_state:
         st.session_state.time_for_second_whistle = None
