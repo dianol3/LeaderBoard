@@ -199,10 +199,26 @@ with col3:
     if st.session_state.penalties_taken >= NUM_PENALTIES:
         st.write("### Fim do Jogo!")
         st.write(f"Você completou todos os {NUM_PENALTIES} penalties.")
+        
+        # Caminho absoluto para o arquivo CSV
+        file_path = f"/tmp/PenaltyTask_{st.session_state.participant_name}.csv"
+    
+        # Garantir que o diretório exista
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    
         # Salvar dados em CSV
-        file_path = f"PenaltyTask_{st.session_state.participant_name}.csv"
         st.session_state.penalty_data.to_csv(file_path, index=False, sep=",")
         st.write(f"Resultados salvos em {file_path}.")
+
+        # Adicionar um botão para download do CSV
+        with open(file_path, "r") as f:
+            st.download_button(
+                label="Baixar o arquivo CSV",
+                data=f,
+                file_name=f"PenaltyTask_{st.session_state.participant_name}.csv",
+                mime="text/csv"
+            )
+    
         st.stop()
 
     novo_registro = pd.DataFrame({
