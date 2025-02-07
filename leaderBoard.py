@@ -208,12 +208,11 @@ with col3:
     
         # Salvar dados em CSV
         st.session_state.penalty_data.to_csv(file_path, index=False, sep=",")
-        st.write(f"Resultados salvos em {file_path}.")
 
         # Adicionar um botão para download do CSV
         with open(file_path, "r") as f:
             st.download_button(
-                label="Baixar o arquivo CSV",
+                label="Download Resultados",
                 data=f,
                 file_name=f"PenaltyTask_{st.session_state.participant_name}.csv",
                 mime="text/csv"
