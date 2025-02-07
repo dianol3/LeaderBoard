@@ -21,7 +21,7 @@ def autoplay_audio(audio_url: str):
         st.markdown(md, unsafe_allow_html=True)
         
 # Caminho do áudio hospedado no GitHub
-audio_url = "https://raw.githubusercontent.com/dianol3/LeaderBoard/main/whistle.mp3.mp3"
+audio_url = https://github.com/dianol3/LeaderBoard/blob/master/whistle.mp3.mp3"
 
 
 
