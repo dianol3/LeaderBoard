@@ -7,18 +7,36 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime
 
-# Função para tocar o áudio automaticamente
-def autoplay_audio(audio_url: str):
-    """Reproduz o áudio automaticamente após 10 segundos."""
-    with open(audio_url, "rb") as f:
-        data = f.read()
-        b64 = base64.b64encode(data).decode()
-        md = f"""
-            <audio autoplay="true">
-            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-            </audio>
-            """
-        st.markdown(md, unsafe_allow_html=True)
+# Função para tocar o áudio automaticamente sem exibir a barra
+def autoplay_audio(file_url: str):
+    """Reproduz o áudio automaticamente sem exibir a barra de reprodução."""
+    audio_html = f"""
+        <audio autoplay="true" style="display:none;">
+            <source src="{file_url}" type="audio/mp3">
+        </audio>
+    """
+    st.markdown(audio_html, unsafe_allow_html=True)
+
+# Inicialização do estado da aplicação
+if 'time_for_second_whistle' not in st.session_state:
+    st.session_state.time_for_second_whistle = None
+
+# Botão para tocar o primeiro apito
+if st.button("Tocar o Primeiro Apito"):
+    autoplay_audio(audio_url)
+    st.session_state.time_for_second_whistle = time.time()
+
+# Lógica de contagem para o segundo apito
+if st.session_state.time_for_second_whistle:
+    countdown_placeholder = st.empty()
+    while True:
+        elapsed_time = time.time() - st.session_state.time_for_second_whistle
+        remaining_time = max(0, 10 - int(elapsed_time))
+        countdown_placeholder.markdown(f"**{remaining_time} segundos**")
+        if remaining_time <= 0:
+            autoplay_audio(audio_url)  # Toca o segundo apito
+            del st.session_state.time_for_second_whistle
+            break
         
 # Caminho do áudio hospedado no GitHub
 audio_url = "https://raw.githubusercontent.com/dianol3/LeaderBoard/master/whistle.mp3.mp3"
