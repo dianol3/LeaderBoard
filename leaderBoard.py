@@ -7,11 +7,19 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime
 
-# Função para tocar o áudio automaticamente usando a URL
+# Função para tocar o áudio automaticamente
 def autoplay_audio(audio_url: str):
-    """Reproduz o áudio automaticamente a partir da URL."""
-    st.audio(audio_url, format="audio/mp3", start_time=0)
-
+    """Reproduz o áudio automaticamente após 10 segundos."""
+    with open(audio_url, "rb") as f:
+        data = f.read()
+        b64 = base64.b64encode(data).decode()
+        md = f"""
+            <audio autoplay="true">
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+            </audio>
+            """
+        st.markdown(md, unsafe_allow_html=True)
+        
 # Caminho do áudio hospedado no GitHub
 audio_url = "https://raw.githubusercontent.com/dianol3/LeaderBoard/main/whistle.mp3.mp3"
 
