@@ -7,6 +7,8 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime
 
+st.set_page_config(layout="wide")
+
 # Função para tocar o áudio automaticamente sem exibir a barra
 def autoplay_audio(file_url: str):
     """Reproduz o áudio automaticamente sem exibir a barra de reprodução."""
@@ -59,9 +61,6 @@ if 'initialized' not in st.session_state:
 if 'penalty_data' not in st.session_state:
     # Criação do DataFrame vazio para armazenar os resultados
     st.session_state.penalty_data = pd.DataFrame(columns=["Indice", "Guarda-Redes", "Hora", "Resultado"])
-
-# Configuração do layout em wide mode
-st.set_page_config(layout="wide")
 
 # Entrada do nome do participante
 if 'participant_name' not in st.session_state:
