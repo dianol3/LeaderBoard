@@ -147,14 +147,14 @@ with col3:
                                key=f"gk_select_{st.session_state.penalties_taken}")
     
     st.write("### Apitos")
-    audio_path = "https://raw.githubusercontent.com/dianol3/LeaderBoard/main/whistle.mp3.mp3"
+    
 
 
     if 'time_for_second_whistle' not in st.session_state:
         st.session_state.time_for_second_whistle = None
 
     if st.button("Tocar o Primeiro Apito", key=f"apito1_{st.session_state.penalties_taken}"):
-        autoplay_audio(audio_path)
+        autoplay_audio(audio_url)
         st.session_state.time_for_second_whistle = time.time()
     
     if st.session_state.time_for_second_whistle:
@@ -164,7 +164,7 @@ with col3:
             remaining_time = max(0, 10 - int(elapsed_time))
             countdown_placeholder.markdown(f"**{remaining_time} segundos**")
             if remaining_time <= 0:
-                autoplay_audio(audio_path)
+                autoplay_audio(audio_url)
                 del st.session_state.time_for_second_whistle
                 break
 
