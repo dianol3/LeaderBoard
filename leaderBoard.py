@@ -76,7 +76,7 @@ def get_gk_ranking():
     return ranking_df
 
 # Exibição dos Rankings Lado a Lado
-col1, col2, col3 = st.columns([2, 2, 1])
+col1, col2 = st.columns()
 
 with col1:
     st.subheader("Jogadores")
