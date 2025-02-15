@@ -1,7 +1,4 @@
 import os
-import base64
-import requests
-import time
 import random
 import pandas as pd
 import streamlit as st
@@ -56,20 +53,6 @@ if 'gk_names' not in st.session_state:
                 st.session_state.gk_names = [gk_a.strip(), gk_b.strip(), gk_c.strip()]
                 st.success("Guarda-redes definidos!")
     st.stop()
-
-# Função para tocar o áudio automaticamente sem exibir a barra
-def autoplay_audio(file_url: str):
-    """Reproduz o áudio automaticamente sem exibir a barra de reprodução."""
-    audio_html = f"""
-        <audio autoplay="true" style="display:none;">
-            <source src="{file_url}" type="audio/mp3">
-        </audio>
-    """
-    st.markdown(audio_html, unsafe_allow_html=True)
-        
-# Caminho do áudio hospedado no GitHub
-audio_url = "https://raw.githubusercontent.com/dianol3/LeaderBoard/master/whistle.mp3.mp3"
-
 
 # Funções para calcular os rankings
 def get_player_ranking():
@@ -142,28 +125,6 @@ with col3:
                                options=st.session_state.gk_names,
                                key=f"gk_select_{st.session_state.penalties_taken}")
     
-    st.write("### Apitos")
-    
-
-
-    if 'time_for_second_whistle' not in st.session_state:
-        st.session_state.time_for_second_whistle = None
-
-    if st.button("Tocar o Primeiro Apito", key=f"apito1_{st.session_state.penalties_taken}"):
-        autoplay_audio(audio_url)
-        st.session_state.time_for_second_whistle = time.time()
-    
-    if st.session_state.time_for_second_whistle:
-        countdown_placeholder = st.empty()
-        while True:
-            elapsed_time = time.time() - st.session_state.time_for_second_whistle
-            remaining_time = max(0, 10 - int(elapsed_time))
-            countdown_placeholder.markdown(f"**{remaining_time} segundos**")
-            if remaining_time <= 0:
-                autoplay_audio(audio_url)
-                del st.session_state.time_for_second_whistle
-                break
-
     result = st.radio("O jogador marcou o penalty?", ("Sim", "Não"), key=f"result_{st.session_state.penalties_taken}")
 
     if st.button("Confirmar Penalty", key=f"confirm_{st.session_state.penalties_taken}"):
@@ -208,7 +169,7 @@ with col3:
     
         # Salvar dados em CSV
         st.session_state.penalty_data.to_csv(file_path, index=False, sep=",")
-
+    
         # Adicionar um botão para download do CSV
         with open(file_path, "r") as f:
             st.download_button(
