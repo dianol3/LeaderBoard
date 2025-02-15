@@ -133,7 +133,7 @@ with col2:
     # Seleção automática do GR com base na ordem colada
     gk_order = st.session_state.gk_order
     # Utiliza o índice da penalidade para definir qual GR usar (cíclico, se necessário)
-    selected_gk = gk_order[st.session_state.penalties_taken % len(gk_order)]
+    selected_gk = gk_order[(st.session_state.penalties_taken + 1) % len(gk_order)]
     st.write(f"**Guarda-Redes a seguir:** {selected_gk}")
     
     result = st.radio("O jogador marcou o penalty?", ("Sim", "Não"), key=f"result_{st.session_state.penalties_taken}")
