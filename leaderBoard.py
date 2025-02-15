@@ -117,7 +117,6 @@ with col2:
     st.table(ranking_gk.style.apply(highlight_gk_row, axis=1))
 
 
-with col3:
     st.write(f"Participante: **{st.session_state.participant_name}**")
     st.write(f"Penalties realizados: **{st.session_state.penalties_taken}/{NUM_PENALTIES}**")
     
