@@ -6,26 +6,26 @@ from datetime import datetime
 
 st.set_page_config(layout="wide")
 
-
-# Inicialização do estado da aplicação
+# Constantes
 NUM_PENALTIES = 45
 NUM_FICTITIOUS = 99
 MAX_PLAYERS = 100
 
+# Inicialização do estado da aplicação
 if 'initialized' not in st.session_state:
     st.session_state.fictitious_ids = [f"P{random.randint(1, MAX_PLAYERS):03d}" for _ in range(NUM_FICTITIOUS)]
     st.session_state.fictitious_scores = [150] * NUM_FICTITIOUS
     st.session_state.participant_score = 150
     st.session_state.penalties_taken = 0
+    # Esses valores serão usados para o ranking dos GR (a ordem de atualização é definida na ordem colhida)
     st.session_state.gk_scores = [150, 150, 150]
     st.session_state.gk_defeated = [0, 0, 0]
     st.session_state.initialized = True
 
 if 'penalty_data' not in st.session_state:
-    # Criação do DataFrame vazio para armazenar os resultados
     st.session_state.penalty_data = pd.DataFrame(columns=["Indice", "Guarda-Redes", "Hora", "Resultado"])
 
-# Entrada do nome do participante
+# 1. Formulário para entrada do nome do participante
 if 'participant_name' not in st.session_state:
     with st.form("form_participant"):
         participant_name = st.text_input("Digite o nome do participante (Jogador):")
@@ -38,7 +38,7 @@ if 'participant_name' not in st.session_state:
                 st.success(f"Bem-vindo, {st.session_state.participant_name}!")
     st.stop()
 
-# Entrada dos nomes dos guarda-redes
+# 2. Formulário para entrada dos nomes dos Guarda-Redes
 if 'gk_names' not in st.session_state:
     with st.form("form_gk"):
         st.write("Insira os nomes dos Guarda-Redes:")
@@ -52,6 +52,20 @@ if 'gk_names' not in st.session_state:
             else:
                 st.session_state.gk_names = [gk_a.strip(), gk_b.strip(), gk_c.strip()]
                 st.success("Guarda-redes definidos!")
+    st.stop()
+
+# 3. Formulário para colar a ordem dos GR (cada linha indica o GR para a vez)
+if 'gk_order' not in st.session_state:
+    with st.form("form_gk_order"):
+        st.write("Cole a ordem dos GR (cada linha deve conter o nome do GR a ser utilizado na vez):")
+        gk_order_input = st.text_area("Ordem dos GR", height=150)
+        submitted = st.form_submit_button("Enviar")
+        if submitted:
+            if gk_order_input.strip() == "":
+                st.error("A ordem não pode estar vazia!")
+            else:
+                st.session_state.gk_order = gk_order_input.strip().splitlines()
+                st.success("Ordem dos GR definida!")
     st.stop()
 
 # Funções para calcular os rankings
@@ -92,42 +106,44 @@ with col1:
     
     def highlight_row(row):
         # Verde pastel para a primeira linha
-        if row.name == 1:  # Verifica se é a primeira linha (Classificação 1)
-            return ['background-color: #a8d5ba; color: #000000'] * len(row)  # Verde pastel e texto preto
-        # Amarelo pastel para a linha do jogador
+        if row.name == 1:
+            return ['background-color: #a8d5ba; color: #000000'] * len(row)
+        # Amarelo pastel para a linha do participante
         elif row["Jogador"] == st.session_state.participant_name:
-            return ['background-color: #f8e0a1; color: #000000'] * len(row)  # Amarelo pastel e texto preto
+            return ['background-color: #f8e0a1; color: #000000'] * len(row)
         return [''] * len(row)
     
     st.table(ranking_display.style.apply(highlight_row, axis=1))
-
 
 with col2:
     st.subheader("GR")
     ranking_gk = get_gk_ranking()
     
-    # Função para destacar a primeira linha dos guarda-redes
+    # Função para destacar a primeira linha dos GR
     def highlight_gk_row(row):
-        # Verde pastel para a primeira linha
-        if row.name == 1:  # Verifica se é a primeira linha (Classificação 1)
-            return ['background-color: #a8d5ba; color: #000000'] * len(row)  # Verde pastel e texto preto
+        if row.name == 1:
+            return ['background-color: #a8d5ba; color: #000000'] * len(row)
         return [''] * len(row)
     
-    # Aplica o estilo na tabela dos guarda-redes
     st.table(ranking_gk.style.apply(highlight_gk_row, axis=1))
-
-
+    
     st.write(f"Participante: **{st.session_state.participant_name}**")
     st.write(f"Penalties realizados: **{st.session_state.penalties_taken}/{NUM_PENALTIES}**")
     
-    selected_gk = st.selectbox("Escolha o Guarda-Redes que vai defender o penalty:", 
-                               options=st.session_state.gk_names,
-                               key=f"gk_select_{st.session_state.penalties_taken}")
+    # Seleção automática do GR com base na ordem colada
+    gk_order = st.session_state.gk_order
+    # Utiliza o índice da penalidade para definir qual GR usar (cíclico, se necessário)
+    selected_gk = gk_order[st.session_state.penalties_taken % len(gk_order)]
+    st.write(f"**Guarda-Redes a seguir:** {selected_gk}")
     
     result = st.radio("O jogador marcou o penalty?", ("Sim", "Não"), key=f"result_{st.session_state.penalties_taken}")
-
+    
     if st.button("Confirmar Penalty", key=f"confirm_{st.session_state.penalties_taken}"):
-        gk_index = st.session_state.gk_names.index(selected_gk)
+        try:
+            gk_index = st.session_state.gk_names.index(selected_gk)
+        except ValueError:
+            st.error(f"O GR '{selected_gk}' não está entre os nomes definidos!")
+            st.stop()
         
         if result == "Sim":
             st.session_state.participant_score += 2
@@ -137,14 +153,15 @@ with col2:
             st.session_state.gk_scores[gk_index] += 8
         st.session_state.gk_defeated[gk_index] += 1
 
+        # Atualiza as pontuações fictícias
         for i in range(NUM_FICTITIOUS):
             if random.random() < 0.8:
                 st.session_state.fictitious_scores[i] += 2
             else:
                 st.session_state.fictitious_scores[i] -= 8
         
-        # Registra o resultado do penalty no DataFrame
-        penalty_time = datetime.now().strftime("%H:%M:%S")  # Hora atual no formato HH:MM:SS
+        # Registra o resultado do penalty
+        penalty_time = datetime.now().strftime("%H:%M:%S")
         result_value = 1 if result == "Sim" else 0
         penalty_record = pd.DataFrame([{
             "Indice": st.session_state.penalties_taken + 1,
@@ -160,16 +177,11 @@ with col2:
         st.write("### Fim do Jogo!")
         st.write(f"Você completou todos os {NUM_PENALTIES} penalties.")
         
-        # Caminho absoluto para o arquivo CSV
+        # Salva os dados em um CSV para download
         file_path = f"/tmp/PenaltyTask_{st.session_state.participant_name}.csv"
-    
-        # Garantir que o diretório exista
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    
-        # Salvar dados em CSV
         st.session_state.penalty_data.to_csv(file_path, index=False, sep=",")
     
-        # Adicionar um botão para download do CSV
         with open(file_path, "r") as f:
             st.download_button(
                 label="Download Resultados",
