@@ -130,25 +130,26 @@ with col2:
     st.write(f"Participante: **{st.session_state.participant_name}**")
     st.write(f"Penalties realizados: **{st.session_state.penalties_taken}/{NUM_PENALTIES}**")
     
-    # Seleção automática dos GR com base na ordem colada
+    # Seleção automática dos GR com base na ordem colada:
+    # O GR atual (defende o penalty) e o seguinte.
     gk_order = st.session_state.gk_order
+    current_index = st.session_state.penalties_taken % len(gk_order)
     next_index = (st.session_state.penalties_taken + 1) % len(gk_order)
-    following_index = (st.session_state.penalties_taken + 2) % len(gk_order)
     
+    current_gk = gk_order[current_index]
     next_gk = gk_order[next_index]
-    following_gk = gk_order[following_index]
     
-    st.write(f"**Guarda-Redes a seguir:** {next_gk}")
-    st.write(f"**Guarda-Redes após esse:** {following_gk}")
+    st.write(f"**Guarda-Redes do penalty atual:** {current_gk}")
+    st.write(f"**Guarda-Redes seguinte:** {next_gk}")
     
     result = st.radio("O jogador marcou o penalty?", ("Sim", "Não"), key=f"result_{st.session_state.penalties_taken}")
     
     if st.button("Confirmar Penalty", key=f"confirm_{st.session_state.penalties_taken}"):
         try:
-            # Para este exemplo, vamos considerar que o próximo GR é o que vai defender
-            gk_index = st.session_state.gk_names.index(next_gk)
+            # Consideramos que o GR atual é o que vai defender o penalty
+            gk_index = st.session_state.gk_names.index(current_gk)
         except ValueError:
-            st.error(f"O GR '{next_gk}' não está entre os nomes definidos!")
+            st.error(f"O GR '{current_gk}' não está entre os nomes definidos!")
             st.stop()
         
         if result == "Sim":
@@ -171,7 +172,7 @@ with col2:
         result_value = 1 if result == "Sim" else 0
         penalty_record = pd.DataFrame([{
             "Indice": st.session_state.penalties_taken + 1,
-            "Guarda-Redes": next_gk,
+            "Guarda-Redes": current_gk,
             "Hora": penalty_time,
             "Resultado": "Golo" if result_value == 1 else "Falhou"
         }])
@@ -197,9 +198,3 @@ with col2:
             )
     
         st.stop()
-
-    novo_registro = pd.DataFrame({
-        "Guarda-Redes": [next_gk],
-        "Golo": [1 if result == "Sim" else 0]
-    })
-    st.session_state.penalty_results = novo_registro
