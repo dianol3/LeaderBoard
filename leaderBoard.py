@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime
 
-st.set_page_config(layout="wide",mode='dark')
+st.set_page_config(layout="wide")
 
 # Constantes
 NUM_PENALTIES = 45
