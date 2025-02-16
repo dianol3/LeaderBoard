@@ -130,56 +130,7 @@ with col2:
     st.write(f"Participante: **{st.session_state.participant_name}**")
     st.write(f"Penalties realizados: **{st.session_state.penalties_taken}/{NUM_PENALTIES}**")
     
-    # Seleção automática dos GR com base na ordem colada:
-    # O GR atual (defende o penalty) e o seguinte.
-    gk_order = st.session_state.gk_order
-    current_index = st.session_state.penalties_taken % len(gk_order)
-    next_index = (st.session_state.penalties_taken + 1) % len(gk_order)
-    
-    current_gk = gk_order[current_index]
-    next_gk = gk_order[next_index]
-    
-    st.write(f"**Guarda-Redes do penalty atual:** {current_gk}")
-    st.write(f"**Guarda-Redes seguinte:** {next_gk}")
-    
-    result = st.radio("O jogador marcou o penalty?", ("Sim", "Não"), key=f"result_{st.session_state.penalties_taken}")
-    
-    if st.button("Confirmar Penalty", key=f"confirm_{st.session_state.penalties_taken}"):
-        try:
-            # Consideramos que o GR atual é o que vai defender o penalty
-            gk_index = st.session_state.gk_names.index(current_gk)
-        except ValueError:
-            st.error(f"O GR '{current_gk}' não está entre os nomes definidos!")
-            st.stop()
-        
-        if result == "Sim":
-            st.session_state.participant_score += 2
-            st.session_state.gk_scores[gk_index] -= 2
-        else:
-            st.session_state.participant_score -= 8
-            st.session_state.gk_scores[gk_index] += 8
-        st.session_state.gk_defeated[gk_index] += 1
-
-        # Atualiza as pontuações fictícias
-        for i in range(NUM_FICTITIOUS):
-            if random.random() < 0.8:
-                st.session_state.fictitious_scores[i] += 2
-            else:
-                st.session_state.fictitious_scores[i] -= 8
-        
-        # Registra o resultado do penalty
-        penalty_time = datetime.now().strftime("%H:%M:%S")
-        result_value = 1 if result == "Sim" else 0
-        penalty_record = pd.DataFrame([{
-            "Indice": st.session_state.penalties_taken + 1,
-            "Guarda-Redes": current_gk,
-            "Hora": penalty_time,
-            "Resultado": "Golo" if result_value == 1 else "Falhou"
-        }])
-        st.session_state.penalty_data = pd.concat([st.session_state.penalty_data, penalty_record], ignore_index=True)
-        
-        st.session_state.penalties_taken += 1
-
+    # Verifica se o jogo acabou
     if st.session_state.penalties_taken >= NUM_PENALTIES:
         st.write("### Fim do Jogo!")
         st.write(f"Você completou todos os {NUM_PENALTIES} penalties.")
@@ -198,3 +149,80 @@ with col2:
             )
     
         st.stop()
+    
+    # Seleção automática dos GR com base na ordem colada:
+    # O GR atual (defende o penalty) e o seguinte.
+    gk_order = st.session_state.gk_order
+    current_index = st.session_state.penalties_taken % len(gk_order)
+    next_index = (st.session_state.penalties_taken + 1) % len(gk_order)
+    
+    current_gk = gk_order[current_index]
+    next_gk = gk_order[next_index]
+    
+    st.write(f"**Guarda-Redes do penalty atual:** {current_gk}")
+    st.write(f"**Guarda-Redes seguinte:** {next_gk}")
+    
+    # Botões para definir o resultado do penalty
+    if st.button("Golo", key=f"golo_{st.session_state.penalties_taken}"):
+        try:
+            gk_index = st.session_state.gk_names.index(current_gk)
+        except ValueError:
+            st.error(f"O GR '{current_gk}' não está entre os nomes definidos!")
+            st.stop()
+        
+        # Atualiza pontuações para Golo
+        st.session_state.participant_score += 2
+        st.session_state.gk_scores[gk_index] -= 2
+        st.session_state.gk_defeated[gk_index] += 1
+        
+        # Atualiza as pontuações fictícias
+        for i in range(NUM_FICTITIOUS):
+            if random.random() < 0.8:
+                st.session_state.fictitious_scores[i] += 2
+            else:
+                st.session_state.fictitious_scores[i] -= 8
+        
+        # Registra o resultado do penalty
+        penalty_time = datetime.now().strftime("%H:%M:%S")
+        penalty_record = pd.DataFrame([{
+            "Indice": st.session_state.penalties_taken + 1,
+            "Guarda-Redes": current_gk,
+            "Hora": penalty_time,
+            "Resultado": "Golo"
+        }])
+        st.session_state.penalty_data = pd.concat([st.session_state.penalty_data, penalty_record], ignore_index=True)
+        
+        st.session_state.penalties_taken += 1
+        st.experimental_rerun()
+    
+    if st.button("Não Golo", key=f"n_golo_{st.session_state.penalties_taken}"):
+        try:
+            gk_index = st.session_state.gk_names.index(current_gk)
+        except ValueError:
+            st.error(f"O GR '{current_gk}' não está entre os nomes definidos!")
+            st.stop()
+        
+        # Atualiza pontuações para Não Golo
+        st.session_state.participant_score -= 8
+        st.session_state.gk_scores[gk_index] += 8
+        st.session_state.gk_defeated[gk_index] += 1
+        
+        # Atualiza as pontuações fictícias
+        for i in range(NUM_FICTITIOUS):
+            if random.random() < 0.8:
+                st.session_state.fictitious_scores[i] += 2
+            else:
+                st.session_state.fictitious_scores[i] -= 8
+        
+        # Registra o resultado do penalty
+        penalty_time = datetime.now().strftime("%H:%M:%S")
+        penalty_record = pd.DataFrame([{
+            "Indice": st.session_state.penalties_taken + 1,
+            "Guarda-Redes": current_gk,
+            "Hora": penalty_time,
+            "Resultado": "Falhou"
+        }])
+        st.session_state.penalty_data = pd.concat([st.session_state.penalty_data, penalty_record], ignore_index=True)
+        
+        st.session_state.penalties_taken += 1
+        st.experimental_rerun()
