@@ -193,7 +193,7 @@ with col2:
         st.session_state.penalty_data = pd.concat([st.session_state.penalty_data, penalty_record], ignore_index=True)
         
         st.session_state.penalties_taken += 1
-        st.experimental_rerun()
+        st.rerun()
     
     if st.button("Não Golo", key=f"n_golo_{st.session_state.penalties_taken}"):
         try:
