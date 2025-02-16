@@ -163,7 +163,7 @@ with col2:
     st.write(f"**Guarda-Redes seguinte:** {next_gk}")
     
     # Botões para definir o resultado do penalty
-    with col1,col2 = st.columns(2)
+    col1,col2 = st.columns(2)
     with col1:
         if st.button("Golo", key=f"golo_{st.session_state.penalties_taken}"):
             try:
